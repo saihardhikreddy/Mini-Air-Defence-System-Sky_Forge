@@ -8,6 +8,18 @@ Thumbs.db
 *.suo
 *.user
 
-# Arduino build folders
+# Arduino build outputs & temporary files
 build/
 *~
+*.hex
+*.elf
+*.o
+*.bin
+
+# Processing export directories
+applet/
+application.windows/
+application.windows32/
+application.windows64/
+application.linux/
+application.macosx/
