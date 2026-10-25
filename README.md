@@ -55,11 +55,11 @@ graph TD
 
 ## 📂 Source Code Map
 
-All primary system code is structured neatly inside the [Source Codes](file:///c:/AIDS/GITHUB/Mini-Air-Defence-System-Sky_Forge-main/Source%20Codes) directory:
+All primary system code is structured neatly inside the [Source Codes](Source%20Codes) directory:
 
-* 📄 **[Sky_Forge_Logic.ino](file:///c:/AIDS/GITHUB/Mini-Air-Defence-System-Sky_Forge-main/Source%20Codes/Sky_Forge_Logic.ino)**:
+* 📄 **[Sky_Forge_Logic.ino](Source%20Codes/Sky_Forge_Logic.ino)**:
   Embedded C++ firmware for the Arduino Uno. Manages the sweeping state machine, smooth servo transitions, triple-sample filtering algorithms, coordinate aiming, and the trigger sequence.
-* 📄 **[Sky_Forge_Radar.pde](file:///c:/AIDS/GITHUB/Mini-Air-Defence-System-Sky_Forge-main/Source%20Codes/Sky_Forge_Radar.pde)**:
+* 📄 **[Sky_Forge_Radar.pde](Source%20Codes/Sky_Forge_Radar.pde)**:
   Processing GUI sketch. Reads incoming serial coordinate strings (e.g., `scan a=90 d=15`) and renders a classic green phosphor radar visualization complete with coordinate grids, custom text status reports, and red target indicators.
 
 ---
@@ -75,6 +75,18 @@ All primary system code is structured neatly inside the [Source Codes](file:///c
   - `servoTrigger` (pin D3) - Actuates the launcher firing link
 * **Threat Indicators**: Active Piezo Buzzer & High-Brightness LED
 * **Effector**: Spring-actuated mechanical neutralization launcher
+
+### 📌 Arduino Uno Pinout Mapping
+| Component | Pin Type | Arduino Pin | Description |
+|-----------|----------|-------------|-------------|
+| HC-SR04 Trig | Digital Output | D9 | Ultrasonic pulse trigger |
+| HC-SR04 Echo | Digital Input | D10 | Ultrasonic echo receiver |
+| Radar Servo | PWM Output | D6 | 0° to 180° horizon sweep |
+| Aiming Servo | PWM Output | D5 | Turret angle alignment |
+| Trigger Servo | PWM Output | D3 | Neutralization launcher actuation |
+| Alert Buzzer | Digital Output | D11 | Threat detection audio alert |
+| Threat LED | Digital Output | D12 | Visual target lock indicator |
+
 
 ### 💻 Software & Libraries Used
 * **Microcontroller Compiler**: Arduino IDE v2+
