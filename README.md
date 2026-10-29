@@ -84,7 +84,7 @@ All primary system code is structured neatly inside the [Source Codes](Source%20
 | Radar Servo | PWM Output | D6 | 0° to 180° horizon sweep |
 | Aiming Servo | PWM Output | D5 | Turret angle alignment |
 | Trigger Servo | PWM Output | D3 | Neutralization launcher actuation |
-| Alert Buzzer | Digital Output | D11 | Threat detection audio alert |
+| Alert Buzzer | Digital Output | D2 | Threat detection audio alert |
 | Threat LED | Digital Output | D12 | Visual target lock indicator |
 
 
