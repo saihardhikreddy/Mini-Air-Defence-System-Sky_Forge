@@ -15,11 +15,34 @@ void setup() {
   f = createFont("Arial Bold", 30);
   textFont(f);
 
-  println("Available ports:");
-  println(Serial.list());
+  String[] ports = Serial.list();
+  println("Available serial ports:");
+  println(ports);
 
-  myPort = new Serial(this, portName, 115200); 
-  myPort.bufferUntil('\n');                    
+  boolean portFound = false;
+  for (String p : ports) {
+    if (p.equals(portName)) {
+      portFound = true;
+      break;
+    }
+  }
+
+  if (!portFound && ports.length > 0) {
+    println("Port " + portName + " not found. Auto-selecting: " + ports[0]);
+    portName = ports[0];
+  }
+
+  if (ports.length > 0) {
+    try {
+      myPort = new Serial(this, portName, 115200); 
+      myPort.bufferUntil('\n');
+      println("Successfully connected to serial port: " + portName);
+    } catch (Exception e) {
+      println("Failed to open serial port " + portName + ": " + e.getMessage());
+    }
+  } else {
+    println("WARNING: No serial ports detected. Connect Arduino and restart radar sketch.");
+  }
 }
 
 void draw() {
@@ -49,79 +72,99 @@ void serialEvent(Serial port) {
     int aIndex = line.indexOf("a=");
     int dIndex = line.indexOf("d=");
 
-    Angle = int(line.substring(aIndex + 2, dIndex).trim());
-    Distance = int(line.substring(dIndex + 2).trim());
+    if (aIndex != -1 && dIndex != -1) {
+      String aStr = line.substring(aIndex + 2, line.indexOf(" ", aIndex));
+      String dStr = line.substring(dIndex + 2);
 
-    Angle = constrain(Angle, 0, 180);
-    Distance = constrain(Distance, 0, 400);
+      Angle = int(aStr);
+      Distance = int(dStr);
 
-    println("Angle:", Angle, "Distance:", Distance);
-  } 
-  catch (Exception e) {
-    println("Parse error:", line);
+      if (Distance > 40) Distance = 40;
+    }
+  } catch(Exception e) {
+    println("Parser error: " + line);
   }
 }
 
-// ================= RADAR DRAW =================
-void radarArea() {
+// ================= VISUAL ELEMENTS =================
+void greenMesh() {
   pushMatrix();
-  translate(width/2, height*0.98);
-  noFill();
-  strokeWeight(2);
   stroke(98, 245, 31);
+  strokeWeight(2);
+  translate(width / 2, height - height * 0.074);
 
-  arc(0, 0, 1150, 1150, PI, TWO_PI);
-  arc(0, 0, 850, 850, PI, TWO_PI);
-  arc(0, 0, 550, 550, PI, TWO_PI);
-  arc(0, 0, 250, 250, PI, TWO_PI);
+  line(-width / 2, 0, width / 2, 0);
 
-  for (int i = 0; i <= 180; i += 30)
-    line(0, 0, -600*cos(radians(i)), -600*sin(radians(i)));
-
+  for (int angle = 30; angle <= 150; angle += 30) {
+    line(0, 0,
+         (-width / 2) * cos(radians(angle)),
+         (-width / 2) * sin(radians(angle)));
+  }
   popMatrix();
 }
 
-void greenMesh() {
-  stroke(98, 245, 31, 40);
-  strokeWeight(1);
-  for (int i = 0; i < height; i += 10) line(0, i, width, i);
-  for (int i = 0; i < width; i += 10) line(i, 0, i, height);
-}
+void radarArea() {
+  pushMatrix();
+  translate(width / 2, height - height * 0.074);
+  noFill();
+  stroke(98, 245, 31);
+  strokeWeight(2);
 
-void infoText() {
-  fill(255);
-  text("Auto Turret Radar", 20, 30);
-  text("Angle : " + Angle + "°", 20, 60);
-  text("Distance : " + Distance + " cm", 20, 90);
+  arc(0, 0, (width - width * 0.0625), (width - width * 0.0625), PI, TWO_PI);
+  arc(0, 0, (width - width * 0.27), (width - width * 0.27), PI, TWO_PI);
+  arc(0, 0, (width - width * 0.479), (width - width * 0.479), PI, TWO_PI);
+  arc(0, 0, (width - width * 0.687), (width - width * 0.687), PI, TWO_PI);
+  popMatrix();
 }
 
 void greenLine() {
   pushMatrix();
-  translate(width/2, height*0.98);
-  strokeWeight(6);
   stroke(30, 250, 60);
+  strokeWeight(9);
+  translate(width / 2, height - height * 0.074);
 
   line(0, 0,
-       600*cos(radians(Angle)),
-      -600*sin(radians(Angle)));
+       (height - height * 0.12) * cos(radians(Angle)),
+       -(height - height * 0.12) * sin(radians(Angle)));
   popMatrix();
 }
 
 void redLine() {
-  if (Distance <= 0 || Distance > 80) return;
-
   pushMatrix();
-  translate(width/2, height*0.98);
-  strokeWeight(6);
-  stroke(255, 0, 0);
+  translate(width / 2, height - height * 0.074);
+  strokeWeight(9);
 
-  pixsDistance = map(Distance, 0, 80, 0, 600);
+  pixsDistance = Distance * ((height - height * 0.1666) * 0.025);
 
-  float x = pixsDistance*cos(radians(Angle));
-  float y = -pixsDistance*sin(radians(Angle));
-
-  line(x, y,
-       600*cos(radians(Angle)),
-      -600*sin(radians(Angle)));
+  if (Distance < 40) {
+    stroke(255, 10, 10);
+    line(pixsDistance * cos(radians(Angle)),
+         -pixsDistance * sin(radians(Angle)),
+         (width - width * 0.505) * cos(radians(Angle)),
+         -(width - width * 0.505) * sin(radians(Angle)));
+  }
   popMatrix();
+}
+
+void infoText() {
+  fill(0);
+  noStroke();
+  rect(0, height - height * 0.0648, width, height);
+
+  fill(98, 245, 31);
+  textSize(25);
+
+  text("10cm", width - width * 0.3854, height - height * 0.0833);
+  text("20cm", width - width * 0.281, height - height * 0.0833);
+  text("30cm", width - width * 0.177, height - height * 0.0833);
+  text("40cm", width - width * 0.0729, height - height * 0.0833);
+
+  textSize(30);
+  text("Angle: " + Angle + " °", width - width * 0.48, height - height * 0.0277);
+
+  if (Distance < 40) {
+    text("Distance: " + Distance + " cm", width - width * 0.26, height - height * 0.0277);
+  } else {
+    text("Distance: Out of Range", width - width * 0.26, height - height * 0.0277);
+  }
 }
