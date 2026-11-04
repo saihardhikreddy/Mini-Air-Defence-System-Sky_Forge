@@ -11,7 +11,7 @@
 
 ## 🎬 Project Demonstration
 
-https://github.com/user-attachments/assets/demo-video-placeholder
+▶️ **[Watch the demo video](Sky_forge%20working%20demo%20video.mp4)** (`Sky_forge working demo video.mp4` in this repository)
 
 > [!NOTE]
 > The demonstration video above showcases the system's complete operational cycle: **Autonomous Horizon Sweep ➔ Target Acquisition ➔ Multi-Sample Distance Validation ➔ Servo Alignment ➔ Automatic Neutralization**.
@@ -87,6 +87,13 @@ All primary system code is structured neatly inside the [Source Codes](Source%20
 | Alert Buzzer | Digital Output | D2 | Threat detection audio alert |
 | Threat LED | Digital Output | D12 | Visual target lock indicator |
 
+
+### ▶️ Running It
+1. Open `Source Codes/Sky_Forge_Logic.ino` in the Arduino IDE and upload it to the Uno.
+2. Close the Arduino Serial Monitor (only one program can hold the port).
+3. Open `Source Codes/Sky_Forge_Radar.pde` in Processing. Set `portName` to your Arduino's port
+   (`COM11` by default; e.g. `/dev/ttyACM0` on Linux). If that port isn't found, the sketch prints the
+   available ports and uses the first one. Both sides talk at `115200` baud.
 
 ### 💻 Software & Libraries Used
 * **Microcontroller Compiler**: Arduino IDE v2+

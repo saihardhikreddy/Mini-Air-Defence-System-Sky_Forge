@@ -28,8 +28,7 @@ const int BUZZER_PIN        = 2;
 const int SCAN_MIN_ANGLE    = 0;
 const int SCAN_MAX_ANGLE    = 180;
 
-// You set SCAN_STEP = 20:
-const int SCAN_STEP         = 9;   
+const int SCAN_STEP         = 9;   // degrees per radar step
 const int STEP_DELAY_MS     = 8;   
 const int speed             = 100;
 const int SAMPLES_PER_READ  = 2;
