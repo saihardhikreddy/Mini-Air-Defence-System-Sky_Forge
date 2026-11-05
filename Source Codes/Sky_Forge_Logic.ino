@@ -216,9 +216,11 @@ void loop() {
   }
 
   // -------- SEND DATA TO PROCESSING FOR RADAR VISUALIZER --------
-  long dispDist = d1;  // choose d1 as the display distance
-  if (dispDist < 0 || dispDist > 30) {
-    dispDist = 0;     
+  // Show the voted distance, so the radar plots only targets that passed the 2-of-3 check
+  // (a single noisy d1 used to flash on screen) and agrees with what the turret engages.
+  long dispDist = d;
+  if (dispDist < 0 || dispDist > MAX_DISTANCE_CM) {
+    dispDist = 0;     // 0 = nothing in range
   }
 
   Serial.print("scan a=");
