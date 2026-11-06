@@ -79,7 +79,9 @@ void serialEvent(Serial port) {
       Angle = int(aStr);
       Distance = int(dStr);
 
-      if (Distance > 40) Distance = 40;
+      // The Arduino sends d=0 when nothing is in range; without this, 0 drew a
+      // full-length red "target" from the centre and read "Distance: 0 cm".
+      if (Distance <= 0 || Distance > 40) Distance = 40;
     }
   } catch(Exception e) {
     println("Parser error: " + line);
