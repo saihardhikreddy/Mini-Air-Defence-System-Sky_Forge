@@ -53,6 +53,7 @@ Servo servoAim;
 Servo servoTrigger;
 
 unsigned long lastShotTime = 0;
+bool hasFired = false;      // no cooldown before the first shot
 
 // Sweep state (0–180–0)
 int scanAngle = SCAN_MIN_ANGLE;
@@ -137,7 +138,9 @@ void engageAtAngle(int angleDeg, long distanceCm) {
 
   if (dConfirm <= FIRE_DISTANCE_CM) {
     unsigned long now = millis();
-    if (now - lastShotTime > COOLDOWN_MS) {
+    // Without hasFired, a target in the first 1.5 s after power-up was refused as
+    // "Cooldown", since lastShotTime starts at 0 and so does millis().
+    if (!hasFired || now - lastShotTime > COOLDOWN_MS) {
       Serial.println("FIRE!");
 
       
@@ -154,6 +157,7 @@ void engageAtAngle(int angleDeg, long distanceCm) {
       digitalWrite(BUZZER_PIN, LOW);
 
       lastShotTime = now;
+      hasFired = true;
     } else {
       Serial.println("Cooldown, not firing yet.");
     }
