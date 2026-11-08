@@ -30,7 +30,6 @@ const int SCAN_MAX_ANGLE    = 180;
 
 const int SCAN_STEP         = 9;   // degrees per radar step
 const int STEP_DELAY_MS     = 8;   
-const int speed             = 100;
 const int SAMPLES_PER_READ  = 2;
 const int MAX_DISTANCE_CM   = 30;
 

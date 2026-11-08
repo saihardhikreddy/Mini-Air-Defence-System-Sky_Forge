@@ -45,7 +45,7 @@ graph TD
 1. **Sense (Scanning & Ranging):**
    An **HC-SR04 Ultrasonic Sensor** is mounted on a sweeping radar platform (0° to 180° sweep). As it sweeps, it continuously monitors target distance at intervals of $9^\circ$.
 2. **Think (Noise Filtering & Target Verification):**
-   The Arduino Uno processes sensor pulses. To prevent false positives from wind, bugs, or electrical noise, the firmware uses a **triple-sample voting filter** (`readDistanceAvg`). It checks three sequential pulses and computes a moving average only if multiple readings confirm the target.
+   The Arduino Uno processes sensor pulses. To prevent false positives from wind, bugs, or electrical noise, the firmware uses a **2-of-3 voting filter** in `loop()`: it takes three readings at each angle (each one the average of two pings, from `readDistanceAvg`) and reports a target only when at least two of them are within range, using the mean of the two that agree.
 3. **Monitor (Plan Position Indicator Radar):**
    Angle and verified distance details are piped over a Serial connection (`115200 baud`) to a host PC. A custom visualizer program renders a sweeping **Plan Position Indicator (PPI) radar** screen, overlaying active targets with a red alert vector.
 4. **Act (Aiming & Neutralization):**
@@ -94,6 +94,20 @@ All primary system code is structured neatly inside the [Source Codes](Source%20
 3. Open `Source Codes/Sky_Forge_Radar.pde` in Processing. Set `portName` to your Arduino's port
    (`COM11` by default; e.g. `/dev/ttyACM0` on Linux). If that port isn't found, the sketch prints the
    available ports and uses the first one. Both sides talk at `115200` baud.
+
+### 🎛️ Tuning
+The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:
+
+| Constant | Default | What it does |
+|----------|---------|--------------|
+| `SCAN_STEP` | `9` | Degrees the radar servo moves per step (smaller = finer but slower sweep) |
+| `DETECT_DISTANCE_CM` | `30` | A voted reading at or under this starts an engagement |
+| `FIRE_DISTANCE_CM` | `30` | The confirming reading after aiming must be at or under this to fire |
+| `MAX_DISTANCE_CM` | `30` | Readings beyond this count as "nothing there" (also the radar's range) |
+| `AIM_ANGLE_OFFSET` | `0` | Added to the radar angle when aiming, to correct a misaligned launcher |
+| `FIRE_REST_ANGLE` / `FIRE_SHOOT_ANGLE` | `80` / `15` | Trigger servo positions; tune them to your firing mechanism |
+| `FIRE_HOLD_MS` | `300` | How long the trigger stays in the shoot position |
+| `COOLDOWN_MS` | `1500` | Minimum time between shots (the first shot after power-up is never held back) |
 
 ### 💻 Software & Libraries Used
 * **Microcontroller Compiler**: Arduino IDE v2+
