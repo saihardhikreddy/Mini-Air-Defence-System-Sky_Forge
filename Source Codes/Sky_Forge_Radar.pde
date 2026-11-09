@@ -9,6 +9,10 @@ float pixsDistance;
 
 String portName = "COM11";   
 
+// The screen shows 0..RANGE_CM; one scale for the rings, their labels and the red target line.
+final int RANGE_CM = 40;
+float pxPerCm() { return (height - height * 0.1666) / RANGE_CM; }
+
 void setup() {
   size(1250, 700);
   smooth();
@@ -81,7 +85,7 @@ void serialEvent(Serial port) {
 
       // The Arduino sends d=0 when nothing is in range; without this, 0 drew a
       // full-length red "target" from the centre and read "Distance: 0 cm".
-      if (Distance <= 0 || Distance > 40) Distance = 40;
+      if (Distance <= 0 || Distance > RANGE_CM) Distance = RANGE_CM;
     }
   } catch(Exception e) {
     println("Parser error: " + line);
@@ -112,10 +116,13 @@ void radarArea() {
   stroke(98, 245, 31);
   strokeWeight(2);
 
-  arc(0, 0, (width - width * 0.0625), (width - width * 0.0625), PI, TWO_PI);
-  arc(0, 0, (width - width * 0.27), (width - width * 0.27), PI, TWO_PI);
-  arc(0, 0, (width - width * 0.479), (width - width * 0.479), PI, TWO_PI);
-  arc(0, 0, (width - width * 0.687), (width - width * 0.687), PI, TWO_PI);
+  // One ring every 10 cm, at the same scale as the target line. (The old fixed sizes put the
+  // rings labelled 10/20/30 cm at about 13/22/31 cm, so a target at the 30 cm firing range
+  // looked like it was inside the 30 cm ring.)
+  for (int cm = 10; cm <= RANGE_CM; cm += 10) {
+    float d = 2 * cm * pxPerCm();
+    arc(0, 0, d, d, PI, TWO_PI);
+  }
   popMatrix();
 }
 
@@ -136,9 +143,9 @@ void redLine() {
   translate(width / 2, height - height * 0.074);
   strokeWeight(9);
 
-  pixsDistance = Distance * ((height - height * 0.1666) * 0.025);
+  pixsDistance = Distance * pxPerCm();
 
-  if (Distance < 40) {
+  if (Distance < RANGE_CM) {
     stroke(255, 10, 10);
     line(pixsDistance * cos(radians(Angle)),
          -pixsDistance * sin(radians(Angle)),
@@ -156,15 +163,15 @@ void infoText() {
   fill(98, 245, 31);
   textSize(25);
 
-  text("10cm", width - width * 0.3854, height - height * 0.0833);
-  text("20cm", width - width * 0.281, height - height * 0.0833);
-  text("30cm", width - width * 0.177, height - height * 0.0833);
-  text("40cm", width - width * 0.0729, height - height * 0.0833);
+  // Each label sits just inside its ring, on the right-hand baseline.
+  for (int cm = 10; cm <= RANGE_CM; cm += 10) {
+    text(cm + "cm", width / 2 + cm * pxPerCm() - textWidth(cm + "cm") - 6, height - height * 0.0833);
+  }
 
   textSize(30);
   text("Angle: " + Angle + " °", width - width * 0.48, height - height * 0.0277);
 
-  if (Distance < 40) {
+  if (Distance < RANGE_CM) {
     text("Distance: " + Distance + " cm", width - width * 0.26, height - height * 0.0277);
   } else {
     text("Distance: Out of Range", width - width * 0.26, height - height * 0.0277);
