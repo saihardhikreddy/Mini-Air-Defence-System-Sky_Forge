@@ -109,6 +109,20 @@ The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:
 | `FIRE_HOLD_MS` | `300` | How long the trigger stays in the shoot position |
 | `COOLDOWN_MS` | `1500` | Minimum time between shots (the first shot after power-up is never held back) |
 
+### 🧾 Serial Output
+The Arduino prints one line per event at `115200` baud, which is also handy in the Serial Monitor when tuning:
+
+| Line | When | Meaning |
+|------|------|---------|
+| `Auto Turret Ready (LED + Buzzer enabled)` | once, at start-up | The servos are in their start positions |
+| `scan a=<angle> d=<cm>` | every radar step | The voted distance at this angle, or `d=0` when nothing is in range. This is the only line the radar sketch reads. |
+| `angle=<a> d1=<cm> d2=<cm> d3=<cm> -> d=<cm>` | every radar step | The three raw readings and the 2-of-3 result (`MAX_DISTANCE_CM + 1` means no echo in range) |
+| `ENGAGE at angle <a> dist=<cm>` | a target passed the vote | The turret stops the sweep and aims |
+| `Confirm dist=<cm>` | after aiming | The re-check that decides whether to fire |
+| `FIRE!` / `Cooldown, not firing yet.` / `Target moved / out of fire range.` | after the re-check | What the turret did |
+
+The radar screen is drawn out to 40 cm (`RANGE_CM` in `Sky_Forge_Radar.pde`), a little past the firmware's 30 cm range, so the 30 cm ring marks where detection stops.
+
 ### 💻 Software & Libraries Used
 * **Microcontroller Compiler**: Arduino IDE v2+
 * **Visualization Environment**: Processing 3+ (Serial Library)
