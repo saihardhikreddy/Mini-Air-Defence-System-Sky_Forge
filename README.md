@@ -45,7 +45,7 @@ graph TD
 1. **Sense (Scanning & Ranging):**
    An **HC-SR04 Ultrasonic Sensor** is mounted on a sweeping radar platform (0° to 180° sweep). As it sweeps, it continuously monitors target distance at intervals of $9^\circ$.
 2. **Think (Noise Filtering & Target Verification):**
-   The Arduino Uno processes sensor pulses. To prevent false positives from wind, bugs, or electrical noise, the firmware uses a **2-of-3 voting filter** in `loop()`: it takes three readings at each angle (each one the average of two pings, from `readDistanceAvg`) and reports a target only when at least two of them are within range, using the mean of the two that agree.
+   The Arduino Uno processes sensor pulses. To prevent false positives from wind, bugs, or electrical noise, the firmware uses a **2-of-3 voting filter** in `loop()`: it takes three readings at each angle (each one the average of two pings, from `readDistanceAvg`) and reports a target only when at least two of them are within range and within `VOTE_AGREE_CM` (5 cm) of each other, using the mean of the closest-agreeing pair. A stray echo can't pull a real target's distance off, or pair with it to invent one in between.
 3. **Monitor (Plan Position Indicator Radar):**
    Angle and verified distance details are piped over a Serial connection (`115200 baud`) to a host PC. A custom visualizer program renders a sweeping **Plan Position Indicator (PPI) radar** screen, overlaying active targets with a red alert vector.
 4. **Act (Aiming & Neutralization):**
@@ -102,6 +102,7 @@ The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:
 |----------|---------|--------------|
 | `SCAN_STEP` | `9` | Degrees the radar servo moves per step (smaller = finer but slower sweep) |
 | `DETECT_DISTANCE_CM` | `30` | A voted reading at or under this starts an engagement |
+| `VOTE_AGREE_CM` | `5` | How close two of the three readings must be to count as the same target |
 | `FIRE_DISTANCE_CM` | `30` | The confirming reading after aiming must be at or under this to fire |
 | `MAX_DISTANCE_CM` | `30` | Readings beyond this count as "nothing there" (also the radar's range) |
 | `AIM_ANGLE_OFFSET` | `0` | Added to the radar angle when aiming, to correct a misaligned launcher |

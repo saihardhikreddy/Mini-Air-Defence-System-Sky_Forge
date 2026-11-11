@@ -36,6 +36,7 @@ const int MAX_DISTANCE_CM   = 30;
 // ---------- Detection distances ----------
 const int DETECT_DISTANCE_CM = 30;  
 const int FIRE_DISTANCE_CM   = 30;   
+const int VOTE_AGREE_CM      = 5;    // two readings count as the same target within this
 // ---------- Aiming & Trigger ----------
 const int AIM_ANGLE_OFFSET   = 0;    
 
@@ -91,6 +92,29 @@ long readDistanceAvg(int samples) {
 
   if (good == 0) return MAX_DISTANCE_CM + 1;
   return sum / good;
+}
+
+
+
+// ---------- 2-of-3 vote ----------
+// A target counts when two of the three readings are in range AND agree with each other;
+// the result is their mean, or MAX_DISTANCE_CM + 1 for nothing. Without the agreement check,
+// one stray echo (5 cm) and a real target (28 cm) averaged to a target at 16 cm that wasn't there.
+bool inRange(long d) { return d > 0 && d <= DETECT_DISTANCE_CM; }
+
+long voteDistance(long d1, long d2, long d3) {
+  const long pairs[3][2] = { {d1, d2}, {d1, d3}, {d2, d3} };
+  long best = MAX_DISTANCE_CM + 1;
+  long bestGap = VOTE_AGREE_CM + 1;
+  for (int i = 0; i < 3; i++) {
+    long a = pairs[i][0], b = pairs[i][1];
+    long gap = a > b ? a - b : b - a;
+    if (inRange(a) && inRange(b) && gap <= VOTE_AGREE_CM && gap < bestGap) {
+      best = (a + b) / 2;   // the closest-agreeing pair wins
+      bestGap = gap;
+    }
+  }
+  return best;
 }
 
 
@@ -207,16 +231,7 @@ void loop() {
   long d2 = readDistanceAvg(2);
   long d3 = readDistanceAvg(2);
 
-  long d = MAX_DISTANCE_CM + 1;  
-
-  
-  if (d1 <= DETECT_DISTANCE_CM && d2 <= DETECT_DISTANCE_CM) {
-    d = (d1 + d2) / 2;
-  } else if (d1 <= DETECT_DISTANCE_CM && d3 <= DETECT_DISTANCE_CM) {
-    d = (d1 + d3) / 2;
-  } else if (d2 <= DETECT_DISTANCE_CM && d3 <= DETECT_DISTANCE_CM) {
-    d = (d2 + d3) / 2;
-  }
+  long d = voteDistance(d1, d2, d3);
 
   // -------- SEND DATA TO PROCESSING FOR RADAR VISUALIZER --------
   // Show the voted distance, so the radar plots only targets that passed the 2-of-3 check
