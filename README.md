@@ -101,6 +101,8 @@ The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:
 | Constant | Default | What it does |
 |----------|---------|--------------|
 | `SCAN_STEP` | `9` | Degrees the radar servo moves per step (smaller = finer but slower sweep) |
+| `STEP_DELAY_MS` | `8` | Pause after each radar step before measuring, so the servo can settle |
+| `SAMPLES_PER_READ` | `2` | Echoes averaged into each of the three voted readings and into the confirming reading (each echo adds about 20 ms, so a step costs about 3 × this × 20 ms) |
 | `DETECT_DISTANCE_CM` | `30` | A voted reading at or under this starts an engagement |
 | `VOTE_AGREE_CM` | `5` | How close two of the three readings must be to count as the same target |
 | `FIRE_DISTANCE_CM` | `30` | The confirming reading after aiming must be at or under this to fire |

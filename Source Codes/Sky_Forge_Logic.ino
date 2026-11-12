@@ -30,7 +30,7 @@ const int SCAN_MAX_ANGLE    = 180;
 
 const int SCAN_STEP         = 9;   // degrees per radar step
 const int STEP_DELAY_MS     = 8;   
-const int SAMPLES_PER_READ  = 2;
+const int SAMPLES_PER_READ  = 2;   // echoes averaged into each of the vote's three readings, and the confirm
 const int MAX_DISTANCE_CM   = 30;
 
 // ---------- Detection distances ----------
@@ -227,9 +227,9 @@ void loop() {
   delay(STEP_DELAY_MS);
 
   
-  long d1 = readDistanceAvg(2);
-  long d2 = readDistanceAvg(2);
-  long d3 = readDistanceAvg(2);
+  long d1 = readDistanceAvg(SAMPLES_PER_READ);
+  long d2 = readDistanceAvg(SAMPLES_PER_READ);
+  long d3 = readDistanceAvg(SAMPLES_PER_READ);
 
   long d = voteDistance(d1, d2, d3);
 
