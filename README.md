@@ -61,6 +61,11 @@ All primary system code is structured neatly inside the [Source Codes](Source%20
   Embedded C++ firmware for the Arduino Uno. Manages the sweeping state machine, smooth servo transitions, triple-sample filtering algorithms, coordinate aiming, and the trigger sequence.
 * 📄 **[Sky_Forge_Radar.pde](Source%20Codes/Sky_Forge_Radar.pde)**:
   Processing GUI sketch. Reads incoming serial coordinate strings (e.g., `scan a=90 d=15`) and renders a classic green phosphor radar visualization complete with coordinate grids, custom text status reports, and red target indicators.
+* 🧪 **[tests/host](tests/host)**:
+  Tests for the turret logic that run on a PC, no board needed. The sketch is compiled unchanged against stand-in Arduino headers that play back chosen echo times, and the tests check the distance conversion, the averaging, the 2-of-3 vote and one engage-and-fire step. CI runs them on every push; locally:
+  ```bash
+  g++ -std=c++17 -Wall -I tests/host -o turret-tests tests/host/test_turret.cpp && ./turret-tests
+  ```
 
 ---
 

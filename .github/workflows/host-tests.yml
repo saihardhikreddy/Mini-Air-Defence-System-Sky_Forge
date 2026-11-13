@@ -1,0 +1,15 @@
+name: host-tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  turret-logic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile the sketch with stand-in Arduino headers and run the logic tests
+        run: |
+          g++ -std=c++17 -Wall -Werror -I tests/host -o turret-tests tests/host/test_turret.cpp
+          ./turret-tests
