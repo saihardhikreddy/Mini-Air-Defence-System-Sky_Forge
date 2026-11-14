@@ -61,6 +61,60 @@ int main() {
   CHECK(out.find("FIRE!") != std::string::npos);
   CHECK(servoAim.read() == 45 + AIM_ANGLE_OFFSET);
 
+  CHECK(servoTrigger.read() == FIRE_REST_ANGLE);  // the trigger arm returns after the shot
+
+  // A second target inside the cooldown is aimed at but not fired on ...
+  auto engageWith = [](long cm) {
+    echoes.clear();
+    for (int i = 0; i < SAMPLES_PER_READ; i++) echoes.push_back(echoFor(cm));
+    engageAtAngle(90, cm);
+    return Serial.take();
+  };
+  // (engageAtAngle reads millis() only after the aim move and the confirm reading, which take a
+  // few hundred ms of delay() here, so start the second engagement right after the shot)
+  fakeMillis = lastShotTime;
+  out = engageWith(15);
+  CHECK(out.find("Cooldown, not firing yet.") != std::string::npos);
+  CHECK(out.find("FIRE!") == std::string::npos);
+  CHECK(servoAim.read() == 90 + AIM_ANGLE_OFFSET);
+  // ... and fired on once the cooldown has passed
+  fakeMillis = lastShotTime + COOLDOWN_MS + 1;
+  out = engageWith(15);
+  CHECK(out.find("FIRE!") != std::string::npos);
+
+  // A target that has gone by the confirm reading is not fired on
+  fakeMillis += 10 * COOLDOWN_MS;
+  echoes.clear();
+  engageAtAngle(30, 20);  // no echoes queued: the confirm sees nothing
+  out = Serial.take();
+  CHECK(out.find("Target moved / out of fire range.") != std::string::npos);
+  CHECK(out.find("FIRE!") == std::string::npos);
+
+  // The very first shot may come straight after power-up (millis() starts at 0, like lastShotTime)
+  hasFired = false;
+  lastShotTime = 0;
+  fakeMillis = 100;
+  out = engageWith(10);
+  CHECK(out.find("FIRE!") != std::string::npos);
+
+  // The sweep turns round at both ends and visits each end once
+  scanAngle = SCAN_MAX_ANGLE - SCAN_STEP;
+  scanDir = +1;
+  std::string angles;
+  for (int i = 0; i < 4; i++) {
+    echoes.clear();
+    loop();
+    Serial.take();
+    angles += std::to_string(scanAngle) + " ";
+  }
+  CHECK(angles == "180 171 162 153 ");
+  scanAngle = SCAN_MIN_ANGLE + SCAN_STEP;
+  scanDir = -1;
+  echoes.clear(); loop(); Serial.take();
+  CHECK(scanAngle == SCAN_MIN_ANGLE && scanDir == +1);
+  echoes.clear(); loop(); Serial.take();
+  CHECK(scanAngle == SCAN_MIN_ANGLE + SCAN_STEP);
+
   if (failures) { std::printf("%d check(s) failed\n", failures); return 1; }
   std::printf("all turret checks passed\n");
   return 0;
