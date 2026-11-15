@@ -62,7 +62,7 @@ All primary system code is structured neatly inside the [Source Codes](Source%20
 * 📄 **[Sky_Forge_Radar.pde](Source%20Codes/Sky_Forge_Radar.pde)**:
   Processing GUI sketch. Reads incoming serial coordinate strings (e.g., `scan a=90 d=15`) and renders a classic green phosphor radar visualization complete with coordinate grids, custom text status reports, and red target indicators.
 * 🧪 **[tests/host](tests/host)**:
-  Tests for the turret logic that run on a PC, no board needed. The sketch is compiled unchanged against stand-in Arduino headers that play back chosen echo times, and the tests check the distance conversion, the averaging, the 2-of-3 vote and one engage-and-fire step. CI runs them on every push; locally:
+  Tests for the turret logic that run on a PC, no board needed. The sketch is compiled unchanged against stand-in Arduino headers that play back chosen echo times, and the tests check the distance conversion, the averaging, the 2-of-3 vote, an engage-and-fire step, the 1.5 s cooldown (and the first shot after power-up), a target gone by the confirming reading, and the sweep turning at 0° and 180°. CI runs them on every push; locally:
   ```bash
   g++ -std=c++17 -Wall -I tests/host -o turret-tests tests/host/test_turret.cpp && ./turret-tests
   ```
@@ -107,7 +107,7 @@ The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:
 |----------|---------|--------------|
 | `SCAN_STEP` | `9` | Degrees the radar servo moves per step (smaller = finer but slower sweep) |
 | `STEP_DELAY_MS` | `8` | Pause after each radar step before measuring, so the servo can settle |
-| `SAMPLES_PER_READ` | `2` | Echoes averaged into each of the three voted readings and into the confirming reading (each echo adds about 20 ms, so a step costs about 3 × this × 20 ms) |
+| `SAMPLES_PER_READ` | `2` | Echoes averaged into each of the three voted readings and into the confirming reading (each echo costs the 20 ms pause after it plus the wait for the echo: about 2 ms for something in range, but up to the 30 ms `pulseIn` timeout when nothing answers. So a step at an empty angle costs about 3 × this × 50 ms, 300 ms at the default, and a full 0–180° pass about 6 s) |
 | `DETECT_DISTANCE_CM` | `30` | A voted reading at or under this starts an engagement |
 | `VOTE_AGREE_CM` | `5` | How close two of the three readings must be to count as the same target |
 | `FIRE_DISTANCE_CM` | `30` | The confirming reading after aiming must be at or under this to fire |
