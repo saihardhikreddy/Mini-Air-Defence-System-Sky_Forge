@@ -3,15 +3,16 @@ import processing.serial.*;
 Serial myPort;
 PFont f;
 
-int Angle = 0;
-int Distance = 0;
-float pixsDistance;
-
-String portName = "COM11";   
-
 // The screen shows 0..RANGE_CM; one scale for the rings, their labels and the red target line.
 final int RANGE_CM = 40;
 float pxPerCm() { return (height - height * 0.1666) / RANGE_CM; }
+
+// volatile: written by serialEvent on the serial thread, read by draw() on the animation thread.
+volatile int Angle = 0;
+volatile int Distance = RANGE_CM;  // nothing in range until the first reading
+float pixsDistance;
+
+String portName = "COM11";   
 
 void setup() {
   size(1250, 700);
@@ -80,12 +81,17 @@ void serialEvent(Serial port) {
       String aStr = line.substring(aIndex + 2, line.indexOf(" ", aIndex));
       String dStr = line.substring(dIndex + 2);
 
-      Angle = int(aStr);
-      Distance = int(dStr);
+      // Parse into locals and publish only finished values: serialEvent runs on the serial
+      // thread while draw() reads Angle and Distance, so the raw d=0 used to be visible for a
+      // frame before the clamp below, flashing a full-length red "target" and "Distance: 0 cm".
+      int a = int(aStr);
+      int d = int(dStr);
 
-      // The Arduino sends d=0 when nothing is in range; without this, 0 drew a
-      // full-length red "target" from the centre and read "Distance: 0 cm".
-      if (Distance <= 0 || Distance > RANGE_CM) Distance = RANGE_CM;
+      // The Arduino sends d=0 when nothing is in range.
+      if (d <= 0 || d > RANGE_CM) d = RANGE_CM;
+
+      Distance = d;
+      Angle = a;
     }
   } catch(Exception e) {
     println("Parser error: " + line);
