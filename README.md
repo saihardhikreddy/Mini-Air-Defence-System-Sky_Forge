@@ -98,7 +98,8 @@ All primary system code is structured neatly inside the [Source Codes](Source%20
 2. Close the Arduino Serial Monitor (only one program can hold the port).
 3. Open `Source Codes/Sky_Forge_Radar.pde` in Processing. Set `portName` to your Arduino's port
    (`COM11` by default; e.g. `/dev/ttyACM0` on Linux). If that port isn't found, the sketch prints the
-   available ports and uses the first one. Both sides talk at `115200` baud.
+   available ports and picks the first that looks like a USB serial adapter (`usbmodem`, `usbserial`,
+   `ttyACM`, `ttyUSB`), or else the last one listed. Both sides talk at `115200` baud.
 
 ### 🎛️ Tuning
 The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:

@@ -24,17 +24,10 @@ void setup() {
   println("Available serial ports:");
   println(ports);
 
-  boolean portFound = false;
-  for (String p : ports) {
-    if (p.equals(portName)) {
-      portFound = true;
-      break;
-    }
-  }
-
-  if (!portFound && ports.length > 0) {
-    println("Port " + portName + " not found. Auto-selecting: " + ports[0]);
-    portName = ports[0];
+  String picked = pickPort(ports, portName);
+  if (picked != null && !picked.equals(portName)) {
+    println("Port " + portName + " not found. Auto-selecting: " + picked);
+    portName = picked;
   }
 
   if (ports.length > 0) {
@@ -48,6 +41,21 @@ void setup() {
   } else {
     println("WARNING: No serial ports detected. Connect Arduino and restart radar sketch.");
   }
+}
+
+// The port to open: the configured one if it is there, else the first that looks like a USB
+// serial adapter (the Arduino), else the last one listed. Taking the first port used to pick
+// /dev/ttyS0 on Linux, a Bluetooth port on macOS and the built-in COM1 on many Windows PCs,
+// none of them the Arduino, so the radar stayed blank.
+String pickPort(String[] ports, String wanted) {
+  if (ports.length == 0) return null;
+  for (String p : ports) if (p.equals(wanted)) return p;
+  for (String p : ports) {
+    String l = p.toLowerCase();
+    if (l.contains("usbmodem") || l.contains("usbserial") || l.contains("ttyacm") || l.contains("ttyusb")
+        || l.contains("wchusbserial")) return p;
+  }
+  return ports[ports.length - 1];   // on Windows a newly plugged-in board gets the highest COM number
 }
 
 void draw() {
