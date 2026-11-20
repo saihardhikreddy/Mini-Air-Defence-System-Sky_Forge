@@ -37,6 +37,11 @@ const int MAX_DISTANCE_CM   = 30;
 const int DETECT_DISTANCE_CM = 30;  
 const int FIRE_DISTANCE_CM   = 30;   
 const int VOTE_AGREE_CM      = 5;    // two readings count as the same target within this
+// Readings past MAX_DISTANCE_CM come back as "nothing there", so raising a detection or firing
+// distance alone would silently change nothing: the turret still could not see past
+// MAX_DISTANCE_CM. Refuse to compile instead.
+static_assert(DETECT_DISTANCE_CM <= MAX_DISTANCE_CM, "raise MAX_DISTANCE_CM too: no reading goes past it");
+static_assert(FIRE_DISTANCE_CM <= MAX_DISTANCE_CM, "raise MAX_DISTANCE_CM too: no reading goes past it");
 // ---------- Aiming & Trigger ----------
 const int AIM_ANGLE_OFFSET   = 0;    
 

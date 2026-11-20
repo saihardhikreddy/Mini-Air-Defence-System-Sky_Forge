@@ -112,7 +112,7 @@ The behaviour is set by constants at the top of `Sky_Forge_Logic.ino`:
 | `DETECT_DISTANCE_CM` | `30` | A voted reading at or under this starts an engagement |
 | `VOTE_AGREE_CM` | `5` | How close two of the three readings must be to count as the same target |
 | `FIRE_DISTANCE_CM` | `30` | The confirming reading after aiming must be at or under this to fire |
-| `MAX_DISTANCE_CM` | `30` | Readings beyond this count as "nothing there" (also the radar's range) |
+| `MAX_DISTANCE_CM` | `30` | Readings beyond this count as "nothing there" (also the radar's range). `DETECT_DISTANCE_CM` and `FIRE_DISTANCE_CM` can't exceed it: the sketch won't compile if they do, since the turret could never see that far |
 | `AIM_ANGLE_OFFSET` | `0` | Added to the radar angle when aiming, to correct a misaligned launcher |
 | `FIRE_REST_ANGLE` / `FIRE_SHOOT_ANGLE` | `80` / `15` | Trigger servo positions; tune them to your firing mechanism |
 | `FIRE_HOLD_MS` | `300` | How long the trigger stays in the shoot position |
