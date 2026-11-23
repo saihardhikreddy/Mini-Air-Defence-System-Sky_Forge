@@ -28,6 +28,14 @@ int main() {
   queue({20, -1}); CHECK(readDistanceAvg(2) == 20);
   queue({-1, 45}); CHECK(readDistanceAvg(2) == NONE);
 
+  // An echo back within 58 us reads as 0 cm. That is the HC-SR04 ringing (or the sensor touching
+  // something), not a target, so it must never count, alone or averaged with a real reading.
+  queue({0}); CHECK(readDistanceOnce() == 0);
+  queue({0, 0}); CHECK(readDistanceAvg(2) == NONE);
+  queue({0, 24}); CHECK(readDistanceAvg(2) == 24);
+  CHECK(voteDistance(0, 0, NONE) == NONE);
+  CHECK(voteDistance(0, 3, 4) == 3);                           // the two real readings still agree
+
   // voteDistance: two readings in range that agree make a target
   CHECK(voteDistance(28, 27, NONE) == 27);
   CHECK(voteDistance(NONE, 12, 14) == 13);
