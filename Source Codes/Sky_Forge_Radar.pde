@@ -7,9 +7,18 @@ PFont f;
 final int RANGE_CM = 40;
 float pxPerCm() { return (height - height * 0.1666) / RANGE_CM; }
 
-// volatile: written by serialEvent on the serial thread, read by draw() on the animation thread.
-volatile int Angle = 0;
-volatile int Distance = RANGE_CM;  // nothing in range until the first reading
+// One reading from the Arduino. serialEvent runs on the serial thread and draw() on the animation
+// thread; publishing angle and distance as two separate volatile ints let draw() pick up a new
+// distance with the previous angle (or the text and the red line from different readings), so a
+// target flashed at the wrong bearing for a frame. Now each reading is one object, swapped in whole.
+class Reading {
+  final int angle, distance;
+  Reading(int angle, int distance) { this.angle = angle; this.distance = distance; }
+}
+volatile Reading latest = new Reading(0, RANGE_CM);  // nothing in range until the first reading
+// This frame's copy of latest, taken once at the top of draw().
+int Angle = 0;
+int Distance = RANGE_CM;
 float pixsDistance;
 
 String portName = "COM11";   
@@ -59,6 +68,10 @@ String pickPort(String[] ports, String wanted) {
 }
 
 void draw() {
+  Reading r = latest;
+  Angle = r.angle;
+  Distance = r.distance;
+
   noStroke();
   fill(0, 25);
   rect(0, 0, width, height);
@@ -98,8 +111,7 @@ void serialEvent(Serial port) {
       // The Arduino sends d=0 when nothing is in range.
       if (d <= 0 || d > RANGE_CM) d = RANGE_CM;
 
-      Distance = d;
-      Angle = a;
+      latest = new Reading(a, d);
     }
   } catch(Exception e) {
     println("Parser error: " + line);
